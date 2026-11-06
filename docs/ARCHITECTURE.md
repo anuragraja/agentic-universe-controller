@@ -93,3 +93,4 @@ flowchart TD
 - **Fatigue Protection**: Enforces rolling 24-hour limits on supervisor requests ($\le \text{max\_requests\_per\_24h}$).
 - **Auto-Apply Path**: Applies operational changes (`schedule`, healthy `caller_id`) without human intervention only when explicitly permitted by tenant policy (`auto_apply.allowed_dims`).
 - **Conflict Handling**: Detects out-of-band supervisor edits; marks conflicting proposals as stale (`apply_stale_conflict`) without stomping supervisor configurations.
+

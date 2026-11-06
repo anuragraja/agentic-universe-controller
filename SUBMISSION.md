@@ -1,6 +1,6 @@
 # Outcome-First Agent Loop — Submission
 
-**Name:** Senior AI Systems Engineer Candidate · **Date:** November 7, 2026 · **Hours actually spent (be honest):** ~14 hours (Audit & Architecture: 3h, Core Implementation: 6h, Incident/Governance/Scale Tuning: 3h, Verification & Documentation: 2h) · **Language / storage:** Python 3.10 / SQLite (WAL mode, PRAGMA synchronous=NORMAL)
+**Name:** Anurag Rajak · **Date:** November 7, 2026 · **Hours actually spent (be honest):** ~14 hours (Audit & Architecture: 3h, Core Implementation: 6h, Incident/Governance/Scale Tuning: 3h, Verification & Documentation: 2h) · **Language / storage:** Python 3.10 / SQLite (WAL mode, PRAGMA synchronous=NORMAL)
 
 ---
 

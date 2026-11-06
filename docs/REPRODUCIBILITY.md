@@ -86,3 +86,4 @@ Output includes:
 1. Event timeline with actors, actions, versions, and proposal IDs.
 2. Proposal lineage with diffs, impact scores, dry runs, and human approval status.
 3. Verified subsequent call outcomes (pickup %, engagement %, QA flags).
+
