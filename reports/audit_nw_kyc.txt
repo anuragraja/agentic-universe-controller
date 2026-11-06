@@ -1,0 +1,111 @@
+﻿================================================================================
+REGULATORY COMPLIANCE AUDIT TRAIL: nw_kyc
+Database: runs/mine01_ctrl.db | Filter Timestamp: ALL
+================================================================================
+
+[1] EVENT TIMELINE & ACTIONS (14 recorded audit log events):
+  [2027-01-04T10:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v1   | Approval requested apr_00001: Rotate degraded caller-IDs and balance load
+             Details: {'proposal_id': 'prop_e5968c79334a', 'approval_id': 'apr_00001', 'impact_score': 0.6}
+  [2027-01-04T11:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v1   | Approval requested apr_00004: Rotate degraded caller-IDs and balance load
+             Details: {'proposal_id': 'prop_5d8849ba4f83', 'approval_id': 'apr_00004', 'impact_score': 0.6}
+  [2027-01-04T16:00:00+05:30] Actor: client_approver | Action: proposal_rejected    | Ver: v1   | Proposal apr_00001 rejected: ['approver declined (judgement call)']
+             Details: {'approval_id': 'apr_00001', 'reasons': ['approver declined (judgement call)']}
+  [2027-01-04T16:00:00+05:30] Actor: controller_approved | Action: approval_applied     | Ver: v2   | Applied approved change apr_00004 -> v2
+             Details: {'approval_id': 'apr_00004', 'proposal_id': 'prop_5d8849ba4f83'}
+  [2027-01-05T11:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v2   | Approval requested apr_00006: Experiment update: Initiate uniform exploration across voice variants ['V1', 'V2']; Initiate unifor
+             Details: {'proposal_id': 'prop_23fe87326270', 'approval_id': 'apr_00006', 'impact_score': 0.45}
+  [2027-01-05T18:00:00+05:30] Actor: controller_approved | Action: approval_applied     | Ver: v3   | Applied approved change apr_00006 -> v3
+             Details: {'approval_id': 'apr_00006', 'proposal_id': 'prop_23fe87326270'}
+  [2027-01-06T12:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v1   | Approval requested apr_00003: Rotate degraded caller-IDs and balance load
+             Details: {'proposal_id': 'prop_fc120baabaf2', 'approval_id': 'apr_00003', 'impact_score': 0.6}
+  [2027-01-06T19:00:00+05:30] Actor: client_approver | Action: proposal_rejected    | Ver: v1   | Proposal apr_00003 rejected: ['approver declined (judgement call)']
+             Details: {'approval_id': 'apr_00003', 'reasons': ['approver declined (judgement call)']}
+  [2027-01-07T11:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v3   | Approval requested apr_00008: Experiment update: Promote winning voice=V2 (+20.5% lift); Promote winning welcome_message=W2 (+35.
+             Details: {'proposal_id': 'prop_5ef5a9704f2e', 'approval_id': 'apr_00008', 'impact_score': 0.45}
+  [2027-01-07T13:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v1   | Approval requested apr_00004: Rotate degraded caller-IDs and balance load
+             Details: {'proposal_id': 'prop_c3b31b11625b', 'approval_id': 'apr_00004', 'impact_score': 0.6}
+  [2027-01-07T14:00:00+05:30] Actor: controller_approved | Action: approval_applied     | Ver: v4   | Applied approved change apr_00008 -> v4
+             Details: {'approval_id': 'apr_00008', 'proposal_id': 'prop_5ef5a9704f2e'}
+  [2027-01-08T11:00:00+05:30] Actor: controller_approved | Action: approval_applied     | Ver: v2   | Applied approved change apr_00004 -> v2
+             Details: {'approval_id': 'apr_00004', 'proposal_id': 'prop_c3b31b11625b'}
+  [2027-01-09T11:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v2   | Approval requested apr_00005: Experiment update: Promote winning voice=V2 (+20.7% lift); Promote winning welcome_message=W2 (+22.
+             Details: {'proposal_id': 'prop_e20f27d5c085', 'approval_id': 'apr_00005', 'impact_score': 0.45}
+  [2027-01-09T17:00:00+05:30] Actor: controller_approved | Action: approval_applied     | Ver: v3   | Applied approved change apr_00005 -> v3
+             Details: {'approval_id': 'apr_00005', 'proposal_id': 'prop_e20f27d5c085'}
+
+[2] PROPOSAL LINEAGE & HUMAN APPROVALS (7 proposals):
+--------------------------------------------------------------------------------
+Proposal ID     : prop_e5968c79334a
+Status          : rejected (Base: v1 -> Applied: vΓÇö)
+Impact Score    : +0.6000 | Affected Leads: 1400
+Rationale       : Load-balancing dials uniformly across all 3 healthy DIDs to prevent saturation.
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 1.0}}, 'new': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'pickup_recovery': 0.05}
+Rejection Reason: ["approver declined (judgement call)"]
+--------------------------------------------------------------------------------
+Proposal ID     : prop_5d8849ba4f83
+Status          : applied (Base: v1 -> Applied: v2)
+Impact Score    : +0.6000 | Affected Leads: 1400
+Rationale       : Load-balancing dials uniformly across all 3 healthy DIDs to prevent saturation.
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 1.0}}, 'new': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'pickup_recovery': 0.05}
+Rejection Reason: []
+--------------------------------------------------------------------------------
+Proposal ID     : prop_23fe87326270
+Status          : applied (Base: v2 -> Applied: v3)
+Impact Score    : +0.4500 | Affected Leads: 2100
+Rationale       : Initiate uniform exploration across voice variants ['V1', 'V2']; Initiate uniform exploration across welcome_message variants ['W1', 'W2']
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}, 'new': {'welcome_message': {'W1': 0.5, 'W2': 0.5}, 'voice': {'V1': 0.5, 'V2': 0.5}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'lift': 0.04}
+Rejection Reason: []
+--------------------------------------------------------------------------------
+Proposal ID     : prop_fc120baabaf2
+Status          : rejected (Base: v1 -> Applied: vΓÇö)
+Impact Score    : +0.6000 | Affected Leads: 1400
+Rationale       : Load-balancing dials uniformly across all 3 available DIDs.
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 1.0}}, 'new': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'pickup_recovery': 0.05}
+Rejection Reason: ["approver declined (judgement call)"]
+--------------------------------------------------------------------------------
+Proposal ID     : prop_5ef5a9704f2e
+Status          : applied (Base: v3 -> Applied: v4)
+Impact Score    : +0.4500 | Affected Leads: 2100
+Rationale       : Promote winning voice=V2 (+20.5% lift); Promote winning welcome_message=W2 (+35.4% lift)
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 0.5, 'W2': 0.5}, 'voice': {'V1': 0.5, 'V2': 0.5}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}, 'new': {'welcome_message': {'W2': 0.8, 'W1': 0.2}, 'voice': {'V2': 0.8, 'V1': 0.2}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'lift': 0.04}
+Rejection Reason: []
+--------------------------------------------------------------------------------
+Proposal ID     : prop_c3b31b11625b
+Status          : applied (Base: v1 -> Applied: v2)
+Impact Score    : +0.6000 | Affected Leads: 1400
+Rationale       : Load-balancing dials uniformly across all 3 available DIDs.
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 1.0}}, 'new': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'pickup_recovery': 0.05}
+Rejection Reason: []
+--------------------------------------------------------------------------------
+Proposal ID     : prop_e20f27d5c085
+Status          : applied (Base: v2 -> Applied: v3)
+Impact Score    : +0.4500 | Affected Leads: 2100
+Rationale       : Promote winning voice=V2 (+20.7% lift); Promote winning welcome_message=W2 (+22.3% lift)
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}, 'new': {'welcome_message': {'W2': 0.85, 'W1': 0.15}, 'voice': {'V2': 0.85, 'V1': 0.15}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'lift': 0.04}
+Rejection Reason: []
+
+[3] SUBSEQUENT VERIFIED OUTCOMES (Observed Telemetry):
+  Welcome  Voice  DID    Prompt  Dials    Pickups  Pickup %  Engaged  Engage %  QA Flag
+  ------------------------------------------------------------------------------
+  W1       V1     D1     P1      32044    8365     26.1%     4951     59.2%     127
+  W1       V1     D2     P1      1038     338      32.6%     210      62.1%     1
+  W1       V1     D3     P1      1022     346      33.9%     235      67.9%     4
+  W1       V2     D1     P1      712      238      33.4%     155      65.1%     2
+  W1       V2     D2     P1      663      203      30.6%     127      62.6%     1
+  W1       V2     D3     P1      649      211      32.5%     120      56.9%     2
+  W2       V1     D1     P1      660      200      30.3%     118      59.0%     5
+  W2       V1     D2     P1      699      258      36.9%     167      64.7%     3
+  W2       V1     D3     P1      664      218      32.8%     136      62.4%     1
+  W2       V2     D1     P1      1713     554      32.3%     383      69.1%     6
+  W2       V2     D2     P1      1717     576      33.5%     395      68.6%     3
+  W2       V2     D3     P1      1631     520      31.9%     330      63.5%     8
+================================================================================
+AUDIT VERIFICATION COMPLETED (IRDAI COMPLIANT)
+================================================================================

@@ -1,0 +1,109 @@
+﻿================================================================================
+REGULATORY COMPLIANCE AUDIT TRAIL: ks_cancel
+Database: runs/mine01_ctrl.db | Filter Timestamp: ALL
+================================================================================
+
+[1] EVENT TIMELINE & ACTIONS (13 recorded audit log events):
+  [2027-01-04T10:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v1   | Approval requested apr_00002: Rotate degraded caller-IDs and balance load
+             Details: {'proposal_id': 'prop_521d58992009', 'approval_id': 'apr_00002', 'impact_score': 0.6}
+  [2027-01-04T10:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v1   | Approval requested apr_00001: Rotate degraded caller-IDs and balance load
+             Details: {'proposal_id': 'prop_c9da130e5dcc', 'approval_id': 'apr_00001', 'impact_score': 0.6}
+  [2027-01-04T11:00:00+05:30] Actor: controller_approved | Action: approval_applied     | Ver: v2   | Applied approved change apr_00002 -> v2
+             Details: {'approval_id': 'apr_00002', 'proposal_id': 'prop_521d58992009'}
+  [2027-01-04T11:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v2   | Approval requested apr_00005: Experiment update: Initiate uniform exploration across voice variants ['V1', 'V2', 'V3', 'V4']; Ini
+             Details: {'proposal_id': 'prop_7af733e645e0', 'approval_id': 'apr_00005', 'impact_score': 0.45}
+  [2027-01-04T11:00:00+05:30] Actor: controller   | Action: approval_requested   | Ver: v1   | Approval requested apr_00002: Rotate degraded caller-IDs and balance load
+             Details: {'proposal_id': 'prop_a00d7bdeff9b', 'approval_id': 'apr_00002', 'impact_score': 0.6}
+  [2027-01-04T12:00:00+05:30] Actor: controller_approved | Action: approval_applied     | Ver: v2   | Applied approved change apr_00001 -> v2
+             Details: {'approval_id': 'apr_00001', 'proposal_id': 'prop_c9da130e5dcc'}
+  [2027-01-04T12:00:00+05:30] Actor: controller   | Action: apply_stale_conflict | Ver: v1   | Could not apply apr_00002: stale base version due to supervisor edit
+             Details: {'approval_id': 'apr_00002'}
+  [2027-01-04T14:00:00+05:30] Actor: controller_approved | Action: approval_applied     | Ver: v3   | Applied approved change apr_00005 -> v3
+             Details: {'approval_id': 'apr_00005', 'proposal_id': 'prop_7af733e645e0'}
+  [2027-01-06T00:00:00+05:30] Actor: controller_auto | Action: auto_applied         | Ver: v4   | Auto-applied config v4: Updated learned per-person preferred call hours
+             Details: {'proposal_id': 'auto_52d7fccbc18a', 'changed_dims': ['schedule']}
+  [2027-01-06T00:00:00+05:30] Actor: controller_auto | Action: auto_applied         | Ver: v3   | Auto-applied config v3: Updated learned per-person preferred call hours
+             Details: {'proposal_id': 'auto_3f5960bffa57', 'changed_dims': ['schedule']}
+  [2027-01-08T00:00:00+05:30] Actor: controller_auto | Action: auto_applied         | Ver: v5   | Auto-applied config v5: Updated learned per-person preferred call hours
+             Details: {'proposal_id': 'auto_62834b36e4fd', 'changed_dims': ['schedule']}
+  [2027-01-10T00:00:00+05:30] Actor: controller_auto | Action: auto_applied         | Ver: v6   | Auto-applied config v6: Updated learned per-person preferred call hours
+             Details: {'proposal_id': 'auto_cd4c1d19a74d', 'changed_dims': ['schedule']}
+  [2027-01-12T00:00:00+05:30] Actor: controller_auto | Action: auto_applied         | Ver: v7   | Auto-applied config v7: Updated learned per-person preferred call hours
+             Details: {'proposal_id': 'auto_7072e95236f9', 'changed_dims': ['schedule']}
+
+[2] PROPOSAL LINEAGE & HUMAN APPROVALS (4 proposals):
+--------------------------------------------------------------------------------
+Proposal ID     : prop_521d58992009
+Status          : applied (Base: v1 -> Applied: v2)
+Impact Score    : +0.6000 | Affected Leads: 3000
+Rationale       : Load-balancing dials uniformly across all 3 healthy DIDs to prevent saturation.
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.5, 'D2': 0.5}}, 'new': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'pickup_recovery': 0.05}
+Rejection Reason: []
+--------------------------------------------------------------------------------
+Proposal ID     : prop_c9da130e5dcc
+Status          : applied (Base: v1 -> Applied: v2)
+Impact Score    : +0.6000 | Affected Leads: 3000
+Rationale       : Load-balancing dials uniformly across all 3 available DIDs.
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.5, 'D2': 0.5}}, 'new': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'pickup_recovery': 0.05}
+Rejection Reason: []
+--------------------------------------------------------------------------------
+Proposal ID     : prop_7af733e645e0
+Status          : applied (Base: v2 -> Applied: v3)
+Impact Score    : +0.4500 | Affected Leads: 4500
+Rationale       : Initiate uniform exploration across voice variants ['V1', 'V2', 'V3', 'V4']; Initiate uniform exploration across welcome_message variants ['W1', 'W2', 'W3']
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}, 'new': {'welcome_message': {'W1': 0.334, 'W2': 0.333, 'W3': 0.333}, 'voice': {'V1': 0.25, 'V2': 0.25, 'V3': 0.25, 'V4': 0.25}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'lift': 0.04}
+Rejection Reason: []
+--------------------------------------------------------------------------------
+Proposal ID     : prop_a00d7bdeff9b
+Status          : stale (Base: v1 -> Applied: vΓÇö)
+Impact Score    : +0.6000 | Affected Leads: 3000
+Rationale       : Load-balancing dials uniformly across all 3 available DIDs.
+Diff            : {'allocations': {'default': {'old': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.5, 'D2': 0.5}}, 'new': {'welcome_message': {'W1': 1.0}, 'voice': {'V1': 1.0}, 'caller_id': {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}}}}}
+Dry Run Impact  : {'pickup_recovery': 0.05}
+Rejection Reason: ["stale_base_version"]
+
+[3] SUBSEQUENT VERIFIED OUTCOMES (Observed Telemetry):
+  Welcome  Voice  DID    Prompt  Dials    Pickups  Pickup %  Engaged  Engage %  QA Flag
+  ------------------------------------------------------------------------------
+  W1       V1     D1     P1      34296    8565     25.0%     4272     49.9%     114
+  W1       V1     D2     P1      34520    8632     25.0%     4343     50.3%     125
+  W1       V1     D3     P1      1438     389      27.1%     194      49.9%     7
+  W1       V2     D1     P1      1036     279      26.9%     151      54.1%     3
+  W1       V2     D2     P1      913      250      27.4%     125      50.0%     2
+  W1       V2     D3     P1      1029     258      25.1%     121      46.9%     3
+  W1       V3     D1     P1      972      235      24.2%     102      43.4%     7
+  W1       V3     D2     P1      936      222      23.7%     103      46.4%     3
+  W1       V3     D3     P1      1029     294      28.6%     142      48.3%     5
+  W1       V4     D1     P1      1013     281      27.7%     156      55.5%     3
+  W1       V4     D2     P1      1026     270      26.3%     149      55.2%     5
+  W1       V4     D3     P1      991      295      29.8%     151      51.2%     8
+  W2       V1     D1     P1      959      252      26.3%     117      46.4%     2
+  W2       V1     D2     P1      1009     272      27.0%     140      51.5%     3
+  W2       V1     D3     P1      1046     267      25.5%     125      46.8%     5
+  W2       V2     D1     P1      966      271      28.1%     153      56.5%     4
+  W2       V2     D2     P1      991      259      26.1%     129      49.8%     3
+  W2       V2     D3     P1      1030     265      25.7%     132      49.8%     4
+  W2       V3     D1     P1      1040     279      26.8%     146      52.3%     5
+  W2       V3     D2     P1      1012     234      23.1%     128      54.7%     1
+  W2       V3     D3     P1      1037     272      26.2%     136      50.0%     12
+  W2       V4     D1     P1      1048     304      29.0%     170      55.9%     6
+  W2       V4     D2     P1      1088     297      27.3%     167      56.2%     6
+  W2       V4     D3     P1      972      257      26.4%     128      49.8%     1
+  W3       V1     D1     P1      977      261      26.7%     121      46.4%     4
+  W3       V1     D2     P1      1061     292      27.5%     126      43.2%     5
+  W3       V1     D3     P1      992      279      28.1%     122      43.7%     2
+  W3       V2     D1     P1      1030     271      26.3%     118      43.5%     7
+  W3       V2     D2     P1      1024     265      25.9%     128      48.3%     5
+  W3       V2     D3     P1      996      262      26.3%     112      42.7%     5
+  W3       V3     D1     P1      1024     272      26.6%     127      46.7%     2
+  W3       V3     D2     P1      1027     250      24.3%     107      42.8%     4
+  W3       V3     D3     P1      1028     288      28.0%     133      46.2%     5
+  W3       V4     D1     P1      974      251      25.8%     116      46.2%     3
+  W3       V4     D2     P1      970      241      24.8%     115      47.7%     1
+  W3       V4     D3     P1      1042     283      27.2%     119      42.0%     6
+================================================================================
+AUDIT VERIFICATION COMPLETED (IRDAI COMPLIANT)
+================================================================================
