@@ -379,3 +379,4 @@ AUDIT VERIFICATION COMPLETED (IRDAI COMPLIANT)
 - **Day 8 (Operational Pilot):** Enable auto-apply for `schedule` and `caller_id` dimensions on the first pilot workflow. Verify pickup rate lift and ensure zero disruption to dialer capacity.
 - **Day 9 (Human Approval Workflow):** Enable conversational variant proposals (`voice`, `welcome_message`) routed to named client approvers. Validate that queue fatigue constraints and SLA windows are strictly upheld.
 - **Day 10 (IRDAI Audit Review):** Conduct a formal audit review with the client’s compliance team, demonstrating full line-item decision provenance via the audit CLI.
+

@@ -285,3 +285,4 @@ class GovernanceClient:
                     summary=f"Proposal {aid} {status}: {data.get('reasons')}",
                     details={"approval_id": aid, "reasons": data.get("reasons")},
                 )
+

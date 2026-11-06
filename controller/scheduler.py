@@ -89,3 +89,4 @@ def extract_lead_preferred_hours(
     for pid, (h, _) in list(best_hours.items())[:max_entries]:
         out[pid] = h
     return out
+

@@ -513,3 +513,4 @@ class Storage:
 
     def close(self):
         self.conn.close()
+

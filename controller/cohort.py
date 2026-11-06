@@ -95,3 +95,4 @@ def propose_standard_cohorts(workflow_id: str, languages: List[str]) -> List[Dic
                 "where": {"lang": [lang]}
             })
     return cohorts[:10]
+
