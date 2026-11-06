@@ -36,6 +36,7 @@ class Controller:
         self.current_versions: Dict[str, int] = {}
         self.last_config: Dict[str, Dict[str, Any]] = {}
         self.active_experiments: Dict[str, Dict[str, Any]] = {}
+        self.decayed_variants: Dict[Tuple[str, str, str, str], bool] = {}  # (wid, cid, dim, val) -> True
 
     def log(self, msg: str):
         if self.verbose:
@@ -126,8 +127,12 @@ class Controller:
 
         start_wall_time = time.time()
         last_day_log = -1
+        day_start_time = time.time()
+        day_events_count = 0
+        total_events_processed = 0
 
         while True:
+            t_tick_start = time.time()
             # 1. Advance simulation clock
             adv_res = self.http.post("/sim/advance", json={"minutes": tick_minutes})
             if adv_res.status_code != 200:
@@ -139,14 +144,27 @@ class Controller:
             finished = st["finished"]
             current_day = sim_minute // 1440
 
+            if current_day != last_day_log and last_day_log >= 0:
+                day_wall_time = time.time() - day_start_time
+                rate = day_events_count / max(day_wall_time, 0.001)
+                self.log(f"--- Sim Day D{last_day_log} Complete: {day_wall_time:.2f}s | Events: {day_events_count} | Throughput: {rate:,.0f} ev/s ---")
+                day_start_time = time.time()
+                day_events_count = 0
+
             if current_day != last_day_log:
                 elapsed = time.time() - start_wall_time
-                self.log(f"--- Sim Day D{current_day} ({sim_ts}) | Elapsed: {elapsed:.1f}s | Credits: {self.http.get('/sim/state').json().get('credits_remaining')} ---")
+                self.log(f"--- Sim Day D{current_day} ({sim_ts}) | Total Elapsed: {elapsed:.1f}s | Credits: {self.http.get('/sim/state').json().get('credits_remaining')} ---")
                 last_day_log = current_day
 
             # 2. Ingest new chunks
+            t_ingest_start = time.time()
+            tick_events = 0
             for ch in st.get("new_chunks", []):
                 ingest_res = self.ingestor.ingest_chunk(ch)
+                ev_cnt = ingest_res.get("events_count", 0)
+                tick_events += ev_cnt
+                day_events_count += ev_cnt
+                total_events_processed += ev_cnt
                 # Handle supervisor edits detected in chunks
                 for s_edit in ingest_res.get("supervisor_edits", []):
                     wid = s_edit["workflow_id"]
@@ -241,7 +259,7 @@ class Controller:
         did_stats = self.storage.get_recent_did_stats(wid, max(0, current_day - 2))
         cur_did_alloc = cur_cfg["allocations"]["default"].get("caller_id", {})
         new_did_alloc, degraded_dids, did_rationale = self.did_mgr.recommend_caller_id_allocation(
-            did_opts, did_stats, cur_did_alloc
+            wid, did_opts, did_stats, cur_did_alloc
         )
 
         if degraded_dids or (new_did_alloc and new_did_alloc != cur_did_alloc and not degraded_dids):
@@ -343,9 +361,11 @@ class Controller:
                 cum_s = dim_stats.get(active_top, {})
                 recent_s = self.storage.get_recent_dim_stats(wid, cid, dim, max(0, current_day - 2)).get(active_top, {})
                 if self.analyzer.detect_decay(active_top, cum_s, recent_s, primary_kpi):
-                    self.log(f"[{wid}:{cid}] DECAY DETECTED on {dim}={active_top}! Initiating rollback.")
-                    # Rollback to baseline (first option) or explore others
-                    fallback = [o for o in opts if o != active_top][0]
+                    self.log(f"[{wid}:{cid}] DECAY DETECTED on {dim}={active_top}! Initiating permanent rollback.")
+                    self.decayed_variants[(wid, cid, dim, active_top)] = True
+                    # Fallback to safe options that are neither decayed nor inferior
+                    safe_fallbacks = [o for o in opts if o != active_top and not self.decayed_variants.get((wid, cid, dim, o))]
+                    fallback = safe_fallbacks[0] if safe_fallbacks else opts[0]
                     candidate_cfg["allocations"].setdefault(cid, copy.deepcopy(cur_alloc))[dim] = {fallback: 1.0}
                     has_change = True
                     change_reasons.append(f"Rollback decayed {dim}={active_top} to {fallback}")
@@ -361,17 +381,24 @@ class Controller:
                     guardrail_max_drop=guardrail_drop,
                 )
 
+                # Mark inferior variants as decayed/blacklisted so they receive 0 traffic
+                for inf in eval_res.get("inferior", []):
+                    self.decayed_variants[(wid, cid, dim, inf)] = True
+
+                valid_options = [o for o in opts if not self.decayed_variants.get((wid, cid, dim, o))]
+                if not valid_options:
+                    valid_options = [opts[0]]
+
                 if eval_res["is_significant"] and eval_res["winner"]:
                     winner = eval_res["winner"]
-                    if cur_dim_alloc.get(winner, 0.0) < 0.8:
+                    if not self.decayed_variants.get((wid, cid, dim, winner)) and cur_dim_alloc.get(winner, 0.0) < 0.8:
                         self.log(f"[{wid}:{cid}] WINNER FOUND: {dim}={winner} (P(win)={eval_res['p_win']:.2f}, lift={eval_res['lift']:+.1%})")
-                        # Shift towards winner
-                        target_alloc = {winner: 0.8}
-                        # keep 20% exploration across others
-                        other_opts = [o for o in opts if o != winner]
-                        for o in other_opts:
-                            target_alloc[o] = round(0.2 / len(other_opts), 3)
-                        # normalize
+                        target_alloc = {winner: 0.85}
+                        other_valid = [o for o in valid_options if o != winner]
+                        if other_valid:
+                            share = round(0.15 / len(other_valid), 3)
+                            for o in other_valid:
+                                target_alloc[o] = share
                         tot = sum(target_alloc.values())
                         target_alloc[winner] += round(1.0 - tot, 3)
 
@@ -379,14 +406,14 @@ class Controller:
                         has_change = True
                         change_reasons.append(f"Promote winning {dim}={winner} (+{eval_res['lift']:.1%} lift)")
 
-                elif not eval_res["all_tested"] and len(cur_dim_alloc) == 1:
-                    # Start initial exploration (split test)
-                    split_alloc = {o: round(1.0 / len(opts), 3) for o in opts}
+                elif not eval_res["all_tested"] and len(cur_dim_alloc) == 1 and current_day <= 1:
+                    # Initial exploration: only split once on day 0/1 across valid options
+                    split_alloc = {o: round(1.0 / len(valid_options), 3) for o in valid_options}
                     tot = sum(split_alloc.values())
-                    split_alloc[opts[0]] += round(1.0 - tot, 3)
+                    split_alloc[valid_options[0]] += round(1.0 - tot, 3)
                     candidate_cfg["allocations"].setdefault(cid, copy.deepcopy(cur_alloc))[dim] = split_alloc
                     has_change = True
-                    change_reasons.append(f"Initiate uniform exploration across {dim} variants {opts}")
+                    change_reasons.append(f"Initiate uniform exploration across {dim} variants {valid_options}")
 
         if has_change:
             changed_dims = []

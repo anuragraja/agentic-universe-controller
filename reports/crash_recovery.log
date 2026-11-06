@@ -1,0 +1,40 @@
+============================================================
+CRASH RECOVERY VERIFICATION TEST (C13)
+============================================================
+[Test] Starting simulator on port 8710...
+[Test] Simulator is ready. Launching Controller Phase 1...
+[Test] Controller running... Waiting 25 seconds before simulated crash...
+
+[Test] !!! SIMULATING ABRUPT CRASH (KILLING PID 13976) !!!
+[Test] Controller process terminated abruptly via SIGKILL.
+[Test] SQLite integrity check post-crash: ok
+[Test] State snapshot at crash: 12 proposals, 31 audit entries logged.
+
+[Test] Restarting Controller Phase 2 with existing SQLite DB...
+  [Controller] [Controller] Connecting to simulator at http://127.0.0.1:8710…
+  [Controller] [Controller] Registered workflow nw_renewal (v9)
+  [Controller] [Controller] Registered workflow nw_kyc (v4)
+  [Controller] [Controller] Registered workflow ks_cancel (v5)
+  [Controller] [Controller] Bootstrapping from historical pre-D0 chunks…
+  [Controller] [Controller] History ingested: 1 chunks.
+  [Controller] [Controller] Starting autonomous control loop…
+  [Controller] [Controller] --- Sim Day D6 (2027-01-10T13:00:00+05:30) | Total Elapsed: 0.0s | Credits: 200.0 ---
+  [Controller] [Controller] [nw_renewal] Auto-applied caller_id rebalance: {'D1': 0.25, 'D2': 0.25, 'D3': 0.25, 'D4': 0.25}
+  [Controller] [Controller] [nw_renewal] Auto-applied caller_id rebalance: {'D1': 0.3334, 'D2': 0.3333, 'D3': 0.3333}
+  [Controller] [Controller] --- Sim Day D6 Complete: 2.49s | Events: 7906 | Throughput: 3,178 ev/s ---
+  [Controller] [Controller] --- Sim Day D7 (2027-01-11T00:00:00+05:30) | Total Elapsed: 2.5s | Credits: 200.0 ---
+  [Controller] [Controller] [nw_renewal:default] DECAY DETECTED on welcome_message=W3! Initiating permanent rollback.
+  [Controller] [Controller] --- Sim Day D7 Complete: 4.34s | Events: 13707 | Throughput: 3,159 ev/s ---
+  [Controller] [Controller] --- Sim Day D8 (2027-01-12T00:00:00+05:30) | Total Elapsed: 6.8s | Credits: 200.0 ---
+  [Controller] [Controller] Simulation finished!
+[Test] Controller Phase 2 exited with code 0.
+
+============================================================
+CRASH RECOVERY TEST RESULTS:
+- Simulator finished: True (End Minute: 11520)
+- Proposals before crash: 12 | After completion: 16
+- Audit records before crash: 31 | After completion: 44
+- Duplicate proposals found: 0
+- SQLite Integrity Check: ok
+============================================================
+[Test] SUCCESS: Crash recovery verified with 100% data integrity and zero duplicate actions.

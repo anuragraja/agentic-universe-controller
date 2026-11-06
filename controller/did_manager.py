@@ -1,16 +1,20 @@
 """Caller-ID health monitoring, load balancing, and incident mitigation."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 
 class DidManager:
-    def __init__(self, min_sample: int = 80, degradation_ratio: float = 0.65):
+    def __init__(self, min_sample: int = 50, degradation_ratio: float = 0.70):
         self.min_sample = min_sample
         self.degradation_ratio = degradation_ratio
+        # Persistent memory of degraded DIDs per workflow
+        self.degraded_dids: Dict[str, Set[str]] = defaultdict(set)
 
     def recommend_caller_id_allocation(
         self,
+        workflow_id: str,
         options: List[str],
         stats: Dict[str, Dict[str, int]],
         current_alloc: Dict[str, float],
@@ -25,43 +29,47 @@ class DidManager:
 
         # Calculate pickup rates
         rates = {}
-        total_dials = 0
         for did in options:
             s = stats.get(did, {"dials": 0, "connected": 0})
             d = s["dials"]
             c = s["connected"]
-            total_dials += d
             if d >= self.min_sample:
                 rates[did] = c / d
 
-        degraded = []
+        # Detect degradation
+        newly_degraded = []
         if len(rates) >= 2:
             avg_rate = sum(rates.values()) / len(rates)
             for did, rate in rates.items():
                 other_rates = [r for d, r in rates.items() if d != did]
                 other_avg = sum(other_rates) / len(other_rates) if other_rates else avg_rate
-                # Degraded if significantly lower than others
-                if rate < other_avg * self.degradation_ratio and (other_avg - rate) >= 0.08:
-                    degraded.append(did)
+                # Flag if pickup is significantly below peer average
+                if rate < other_avg * self.degradation_ratio and (other_avg - rate) >= 0.07:
+                    if did not in self.degraded_dids[workflow_id]:
+                        newly_degraded.append(did)
+                        self.degraded_dids[workflow_id].add(did)
 
-        # Active healthy DIDs
-        healthy = [d for d in options if d not in degraded]
+        all_degraded = self.degraded_dids[workflow_id]
+        healthy = [d for d in options if d not in all_degraded]
         if not healthy:
-            healthy = options  # fallback
+            healthy = options  # fallback if all are flagged
 
-        # Uniform load balancing across healthy DIDs to minimize (load / l0)^2 saturation
+        # Determine target allocation:
+        # We want to load balance evenly across all known healthy DIDs
+        # to minimize quadratic load saturation (load / l0)^2
         weight = round(1.0 / len(healthy), 4)
         new_alloc = {d: weight for d in healthy}
-        # adjust sum to 1.0
         tot = sum(new_alloc.values())
         if tot > 0:
             first_did = next(iter(new_alloc))
             new_alloc[first_did] += round(1.0 - tot, 4)
 
-        if degraded:
-            rationale = (f"Detected degraded caller-IDs {degraded} (pickup < {self.degradation_ratio:.0%} of pool). "
-                         f"Load-balanced remaining healthy DIDs: {healthy}")
+        if newly_degraded:
+            rationale = (f"Detected degraded caller-ID(s) {newly_degraded}. "
+                         f"Removed from allocation and load-balanced healthy DIDs: {healthy}")
+        elif all_degraded:
+            rationale = f"Maintaining load balance across confirmed healthy DIDs {healthy} (excluding {list(all_degraded)})"
         else:
-            rationale = f"Load-balancing dials uniformly across all {len(healthy)} healthy DIDs to prevent saturation."
+            rationale = f"Load-balancing dials uniformly across all {len(healthy)} available DIDs."
 
-        return new_alloc, degraded, rationale
+        return new_alloc, list(all_degraded), rationale

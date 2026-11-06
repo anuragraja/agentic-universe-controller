@@ -157,6 +157,21 @@ class ExperimentAnalyzer:
 
         is_sig = best_variant != control and best_p_win >= bonferroni_threshold
 
+        # Detect clearly inferior variants (e.g. W3 on ks_cancel with 10% penalty)
+        inferior = []
+        for opt in options:
+            if opt == control:
+                continue
+            s = stats.get(opt, {})
+            opt_k = s.get(k_metric, 0)
+            opt_n = s.get(n_metric, 0)
+            if opt_n >= 80 and ctrl_n >= 80:
+                p_win = prob_b_greater_than_a(ctrl_k, ctrl_n, opt_k, opt_n)
+                ctrl_rate = ctrl_k / ctrl_n
+                opt_rate = opt_k / opt_n
+                if p_win <= 0.05 or (opt_rate - ctrl_rate) / max(ctrl_rate, 1e-4) <= -0.05:
+                    inferior.append(opt)
+
         return {
             "control": control,
             "winner": best_variant if is_sig else None,
@@ -165,6 +180,7 @@ class ExperimentAnalyzer:
             "lift": best_lift,
             "all_tested": all_tested,
             "is_significant": is_sig,
+            "inferior": inferior,
         }
 
     def detect_decay(

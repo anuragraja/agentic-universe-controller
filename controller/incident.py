@@ -77,11 +77,18 @@ class IncidentManager:
             candidates = [p for p in options if p != current_prompt]
 
         # 2. Run synthetic validation on candidates
+        # Sort candidates to prefer grounded/production prompts over strict/verbatim compliance scripts
+        # as highlighted in stakeholder memo 04 (Anita Desai)
+        candidates.sort(key=lambda p: 1 if "strict" in p.lower() or p == "P5" else 0)
+
         best_candidate = None
         best_run_id = None
         best_pass_rate = 0.0
 
         for cand in candidates:
+            # Skip strict verbatim scripts if we already found a valid fix
+            if (cand == "P5" or "strict" in cand.lower()) and best_candidate is not None:
+                continue
             try:
                 # n=200 costs ceil(200/100) = 2 credits
                 vr = http_client.post("/validation/runs", json={

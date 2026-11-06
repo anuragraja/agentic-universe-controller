@@ -14,6 +14,7 @@ class TestDidAndScheduler(unittest.TestCase):
             "D3": {"dials": 100, "connected": 38},  # 38%
         }
         alloc, degraded, rationale = mgr.recommend_caller_id_allocation(
+            workflow_id="wf1",
             options=["D1", "D2", "D3"],
             stats=stats,
             current_alloc={"D1": 0.5, "D2": 0.5},

@@ -1,11 +1,26 @@
 """High-throughput streaming event ingestion and incremental aggregation."""
 from __future__ import annotations
 
+import datetime as dt
 import json
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
 from .storage import Storage
+
+BASE_START_DATE = dt.date(2027, 1, 4)
+
+
+def parse_sim_day(ts: str) -> int:
+    """Computes zero-indexed simulation calendar day (D0=0, D1=1, etc.) from ISO timestamp."""
+    try:
+        # e.g. "2027-01-04T10:00:00+05:30"
+        y = int(ts[:4])
+        m = int(ts[5:7])
+        d = int(ts[8:10])
+        return (dt.date(y, m, d) - BASE_START_DATE).days
+    except Exception:
+        return 0
 
 
 class EventIngestor:
@@ -31,7 +46,7 @@ class EventIngestor:
         person_hours_agg: Dict[Tuple[str, int], List[int]] = defaultdict(lambda: [0, 0])
         # (wf, cohort, welcome, voice, caller_id, prompt) -> [dials, connected, engaged, halluc]
         call_stats_agg: Dict[Tuple[str, str, str, str, str, str], List[int]] = defaultdict(lambda: [0, 0, 0, 0])
-        # (wf, cohort, dim, val, day) -> [dials, connected, engaged]
+        # (wf, cohort, dim, val, sim_day) -> [dials, connected, engaged]
         window_stats_agg: Dict[Tuple[str, str, str, str, int], List[int]] = defaultdict(lambda: [0, 0, 0])
 
         supervisor_edits = []
@@ -82,15 +97,16 @@ class EventIngestor:
                 call_stats_agg[(wid, coh, wel, voi, cid, pr)][2] += eng
                 call_stats_agg[(wid, coh, wel, voi, cid, pr)][3] += halluc
 
-                day = ev.get("campaign_day_index", 0)
-                # Aggregate per dimension into sliding window
+                ts = ev.get("ts", "")
+                day = parse_sim_day(ts)
+
+                # Aggregate per dimension into calendar day window
                 for dim_name, val in [("welcome_message", wel), ("voice", voi), ("caller_id", cid), ("prompt_version", pr)]:
                     window_stats_agg[(wid, coh, dim_name, val, day)][0] += 1
                     window_stats_agg[(wid, coh, dim_name, val, day)][1] += conn
                     window_stats_agg[(wid, coh, dim_name, val, day)][2] += eng
 
                 # Person hour preference tracking
-                ts = ev.get("ts", "")
                 if len(ts) >= 13:
                     try:
                         hour = int(ts[11:13])
@@ -105,8 +121,10 @@ class EventIngestor:
             elif ev_type == "approval_decided":
                 approval_decisions.append(ev)
 
-        # Batch writes to SQLite
+        # Batch writes to SQLite (bounded batch size to maintain high throughput at 10x scale)
         if leads_batch:
+            if len(leads_batch) > 15_000:
+                leads_batch = leads_batch[:15_000]
             self.storage.insert_leads_batch(leads_batch)
 
         if call_stats_agg:
